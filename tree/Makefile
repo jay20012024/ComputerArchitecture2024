@@ -3,7 +3,7 @@ target = tree
 
 c_srcs = main.c
 # asm_srcs = tree_asm.s
-asm_srcs = tree.s
+asm_srcs = tree_asm.s
 
 c_objs = $(c_srcs:.c=.o)
 asm_objs = $(asm_srcs:.s=.o)

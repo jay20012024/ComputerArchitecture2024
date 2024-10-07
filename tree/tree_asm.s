@@ -6,45 +6,66 @@
 	.align	2
 	.globl	tree
 	.type	tree, @function
-	
 tree:
-    # a0: root tree node addr, a1: queue array addr
-    addi t0, zero, 0          # sum = 0
-    lw t1, 0(a0)              # load root node value
-    sw t1, 0(a1)              # queue[0] = root node
-    addi t2, zero, 1          # cur = 1
-    addi t3, zero, 0          # head = 0
 
-loop:
-    beq t3, t2, end_loop      # if head == cur, exit loop
+	#------Your code starts here------
+	# root tree node addr : a0, queue array addr : a1
+    add t0, x0, x0  # t0 : sum
 
-    lw t4, 0(a1)              # load queue[head]
-    addi t3, t3, 1            # head++
+    lw t1, 0(a0)    # t1 : *(root), temporary
+    sw t1, 0(a1)    # queue[0] = val + + 
+	lw t1, 4(a0)    # t1 : *(root), temporary
+    sw t1, 4(a1)    # queue[0] = + left +
+	lw t1, 8(a0)    # t1 : *(root), temporary
+    sw t1, 8(a1)    # queue[0] = + + right
+    addi t2, x0, 12  # t2 : int cur = 1, sizeof(node) == 12
+    add t3, x0, x0  # t3 : int head = 0, sizeof(node) == 12
 
-    # sum += node->val
-    add t0, t0, t4            # sum = sum + node->val
+Loop:
+    beq t3, t2, EndLoop	# if (head == cur) -> escape Loop
 
-    # process left child
-    lw t5, 4(t4)              # load left child address (assuming offset 4)
-    bnez t5, enqueue_left      # if left child exists, enqueue it
+    add t4, a1, t3	# t4 : node = queue + (12 * head)
+    addi t3, t3, 12	# head++
 
-enqueue_left:
-    sw t5, 0(a1 + t2*4)       # queue[cur] = node->left
-    addi t2, t2, 1            # cur++
+#left
+    lw t5, 4(t4) # t5 : node->left == *(node + 4)
+    beq t5, x0, EndLeft
 
-    # process right child
-    lw t6, 8(t4)              # load right child address (assuming offset 8)
-    bnez t6, enqueue_right     # if right child exists, enqueue it
+	add t6, a1, t2	# t6 : queue + (12 * cur)
+	lw t1, 0(t5)	# t1 : *(node->left), temporary
+	sw t1, 0(t6)	# queue[curr] = val + +
+	lw t1, 4(t5)	# t1 : *(node->left), temporary
+	sw t1, 4(t6)	# queue[curr] = + left +
+	lw t1, 8(t5)	# t1 : *(node->left), temporary
+	sw t1, 8(t6)	# queue[curr] = + + right
+	addi t2, t2, 12	# cur++
+EndLeft:
 
-enqueue_right:
-    sw t6, 0(a1 + t2*4)       # queue[cur] = node->right
-    addi t2, t2, 1            # cur++
+#Right
+ 	lw t5, 8(t4) # t5 : node->right == *(node + 8)
+    beq t5, x0, EndRight
 
-    j loop                    # repeat the loop
+	add t6, a1, t2	# t6 : queue + (12 * cur)
+	lw t1, 0(t5)	# t1 : *(node->right), temporary
+	sw t1, 0(t6)	# queue[curr] = val + +
+	lw t1, 4(t5)	# t1 : *(node->right), temporary
+	sw t1, 4(t6)	# queue[curr] = + left +
+	lw t1, 8(t5)	# t1 : *(node->right), temporary
+	sw t1, 8(t6)	# queue[curr] = + + right
+	addi t2, t2, 12	# cur++
+EndRight:
 
-end_loop:
-    mv a0, t0                 # load return value to reg a0
-    jr ra                     # return
+	lw t1, 0(t4)	# t1 : node->val, temporary
+	add t0, t0, t1 	# t0 : sum += node->val
 
+    beq x0, x0, Loop
+	
+EndLoop:
+
+	add a0, x0, t0
+	# Load return value to reg a0
+	#------Your code ends here------
+
+	jr	ra
 	.size	tree, .-tree
 	.ident	"GCC: (g2ee5e430018) 12.2.0"
